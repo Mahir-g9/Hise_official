@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Play Hise, a real-time multiplayer hide-and-seek game online! Join lobbies, customize your player, and compete with friends.">
+<meta name="keywords" content="multiplayer, online game, hide and seek, lobby, play with friends, Hise, Hise official">
+    <title>HISE! Hide & Seek: Multiplayer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Login/Signup Screen (initial view) -->
+    <div class="login-container" id="login-container">
+        <h2 class="login-title">Hide & Seek Multiplayer</h2>
+        <div class="input-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Enter your email">
+        </div>
+        <div class="input-group">
+            <label for="password">Password</label>
+            <div class="password-container">
+                <input type="password" id="password" placeholder="Enter your password">
+                <span class="toggle-password" id="toggle-password">
+                    <i class="fa fa-eye"></i>
+                </span>
+            </div>
+        </div>
+        <button class="btn-login" id="btn-login">Login</button>
+        <button class="btn-signup" id="btn-signup">Create Account</button>
+        <div class="login-toggle" id="toggle-login-signup">
+            Don't have an account? Sign up now!
+        </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div class="container" id="game-container" style="display: none;">
+        <header>
+            <div class="logo">HIDE & <span>SEEK</span></div>
+        </header>
+                    <div class="main-area">
+                <div class="tab-container">
+                    <div class="tab active" data-tab="lobby">Lobby Browser</div>
+                    <div class="tab" data-tab="create">Create Lobby</div>
+                </div>
+                
+                <div class="view">
+                    <div class="tab-content" id="lobby-tab">
+                        <h3>Public Lobbies</h3>
+                        <div class="lobby-list" id="lobby-list">
+                            <!-- Lobbies will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="create-tab" style="display: none;">
+                        <h3>Create a New Lobby</h3>
+                        <div class="input-group">
+                            <label for="lobby-name">Lobby Name</label>
+                            <input type="text" id="lobby-name" placeholder="Enter lobby name">
+                        </div>
+                        <div class="input-group">
+                            <label for="max-players">Max Players (2-15)</label>
+                            <input type="number" id="max-players" min="2" max="15" value="8">
+                        </div>
+                        <div class="input-group">
+                            <label>
+                                <input type="checkbox" id="public-lobby" checked> Public Lobby
+                            </label>
+                        </div>
+                        <button class="btn-login" id="create-lobby-btn">Create Lobby</button>
+                    </div>
+                </div>
+            </div>
+        <div class="content">
+            <div class="left-panel">
+                <div class="player-card">
+                    <div class="player-avatar">
+                        <i class="fas fa-user-astronaut"></i>
+                    </div>
+                    <div class="player-name" id="player-name">Player123</div>
+                    <div class="player-id">ID: <span id="player-id">ABC123</span></div>
+                </div>
+                
+                <button class="play-btn" id="play-btn">
+                    <i class="fas fa-play"></i> PLAY
+                </button>
+                
+                <div class="tab-container" style="margin-top: 20px;">
+                    <div class="tab active" data-tab="account">Account</div>
+                    <div class="tab" data-tab="customize">Customize</div>
+                </div>
+                
+                <div class="view">
+                    <div class="tab-content" id="account-tab">
+                        <h3>Account Settings</h3>
+                        <div class="input-group" style="margin-top: 20px;">
+                            <label for="change-name">Change Name</label>
+                            <input type="text" id="change-name" placeholder="New name">
+                        </div>
+                        <button class="btn-login" style="margin-top: 10px;" id="save-name-btn">Save Changes</button>
+                        <button id="btn-logout" class="btn-login">Log Out</button>
+                    </div>
+                    
+                    <div class="tab-content" id="customize-tab" style="display: none;">
+                        <h3>Customize Character</h3>
+                        <div class="color-picker">
+                            <div class="color-option selected" style="background: #FF5555;"></div>
+                            <div class="color-option" style="background: #55FF55;"></div>
+                            <div class="color-option" style="background: #5555FF;"></div>
+                            <div class="color-option" style="background: #FFFF55;"></div>
+                            <div class="color-option" style="background: #FF55FF;"></div>
+                            <div class="color-option" style="background: #55FFFF;"></div>
+                            <div class="color-option" style="background: #FFAA55;"></div>
+                            <div class="color-option" style="background: #AA55FF;"></div>
+                        </div>
+                        <button class="btn-login" id="save-color-btn">Save Customization</button>
+                    </div>
+                </div>
+            </div>
+            
+
+        </div>
+        
+        <footer>
+            <p>Hide & Seek Multiplayer &copy; 2023 | Powered by Firebase</p>
+        </footer>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <script src="main.js"></script>
+</body>
+</html>
