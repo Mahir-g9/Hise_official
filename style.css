@@ -1,0 +1,600 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    background: rgba(30, 30, 46, 0.8);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    min-height: 90vh;
+}
+
+header {
+    background: #e94560;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.logo {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.logo span {
+    color: #0f3460;
+}
+
+.content {
+    display: flex;
+    flex: 1;
+}
+
+.left-panel {
+    width: 250px;
+    background: #0f3460;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.player-card {
+    background: #1a1a2e;
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.player-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #e94560;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.player-name {
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.player-id {
+    font-size: 0.8rem;
+    color: #a9a9a9;
+}
+
+.play-btn {
+    background: #e94560;
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s;
+}
+
+.play-btn:hover {
+    background: #ff6b81;
+    transform: translateY(-3px);
+}
+
+.main-area {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-container {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.tab {
+    padding: 12px 20px;
+    background: #0f3460;
+    border-radius: 8px 8px 0 0;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.tab.active {
+    background: #1f4068;
+}
+
+.view {
+    flex: 1;
+    background: #1f4068;
+    border-radius: 0 15px 15px 15px;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.lobby-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.lobby-card {
+    background: #1a1a2e;
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.lobby-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.lobby-name {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #e94560;
+}
+
+.lobby-players {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.player-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #4e4e8d;
+    margin-right: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+.player-circle.seeker {
+    background: #ff4757;
+    color: black;
+}
+
+.player-circle.hider {
+    background: #70a1ff;
+    color: black;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.message {
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.message.system {
+    background: rgba(233, 69, 96, 0.2);
+    text-align: center;
+}
+
+.chat-input {
+    display: flex;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 20px 0 0 20px;
+    border: none;
+    background: #2c2c54;
+    color: white;
+}
+
+.chat-input button {
+    padding: 12px 20px;
+    border-radius: 0 20px 20px 0;
+    border: none;
+    background: #e94560;
+    color: white;
+    cursor: pointer;
+}
+
+.customization {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.color-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+    justify-content: center;
+}
+
+.color-option {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.color-option.selected {
+    border-color: white;
+    transform: scale(1.1);
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    background: rgba(30, 30, 46, 0.9);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.login-title {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #e94560;
+    font-size: 1.8rem;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #0f3460;
+    background: #1a1a2e;
+    color: white;
+}
+
+.password-container {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 12px;
+    cursor: pointer;
+    color: #a9a9a9;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: #e94560;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+
+.btn-signup {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #e94560;
+    background: transparent;
+    color: #e94560;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.login-toggle {
+    text-align: center;
+    margin-top: 20px;
+    color: #a9a9a9;
+    cursor: pointer;
+}
+
+.login-toggle:hover {
+    color: #e94560;
+}
+
+footer {
+    text-align: center;
+    padding: 15px;
+    background: #0f3460;
+    font-size: 0.9rem;
+    color: #a9a9a9;
+}
+
+@media (max-width: 768px) {
+    .content {
+        flex-direction: column;
+    }
+    
+    .left-panel {
+        width: 100%;
+        order: 2;
+    }
+    
+    .main-area {
+        order: 1;
+    }
+}
+.lobby-players-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.lobby-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.chat-container {
+    margin-bottom: 20px;
+}
+
+.chat-messages {
+    height: 200px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.chat-input {
+    display: flex;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px 0 0 20px;
+    border: none;
+    background: #2c2c54;
+    color: white;
+}
+
+.chat-input button {
+    padding: 10px 20px;
+    border-radius: 0 20px 20px 0;
+    border: none;
+    background: #e94560;
+    color: white;
+    cursor: pointer;
+}/* Fix input text visibility */
+.input-group input {
+    color: white !important;
+    padding: 12px !important;
+    background: #1a1a2e !important;
+    border: 2px solid #0f3460 !important;
+    border-radius: 10px !important;
+    width: 100% !important;
+}
+
+.input-group input::placeholder {
+    color: #a9a9a9;
+}
+
+/* Join by ID section */
+.join-by-id-section {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.join-by-id-section .input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.join-by-id-section input {
+    flex: 1;
+}
+
+.join-by-id-section button {
+    white-space: nowrap;
+}
+
+/* Game ID container */
+.game-id-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.game-id-value {
+    font-family: monospace;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.copy-btn {
+    background: #4e4e8d;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.copy-btn:hover {
+    background: #5d5d9e;
+}
+
+/* Lobby closed message */
+#lobby-closed-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 1000;
+    box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+    border: 2px solid #e94560;
+}
+
+.lobby-closed-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.lobby-closed-content p {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #e94560;
+}
+
+.sad-face {
+    font-size: 1.4rem;
+}
+
+#close-lobby-message-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #e94560;
+}
+
+/* Lobby players list */
+.lobby-players-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.lobby-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+/* Chat styles */
+.chat-container {
+    margin-bottom: 20px;
+}
+
+.chat-messages {
+    height: 200px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.chat-input {
+    display: flex;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px 0 0 20px;
+    border: none;
+    background: #2c2c54;
+    color: white;
+}
+
+.chat-input button {
+    padding: 10px 20px;
+    border-radius: 0 20px 20px 0;
+    border: none;
+    background: #e94560;
+    color: white;
+    cursor: pointer;
+}
+.input-group {
+    display: flex;
+    flex-direction: column; /* stack children vertically */
+    gap: 10px; /* space between input and button */
+}
+
+#join-lobby-id {
+    width: 100%;
+    padding: 12px;
+    background: #1a1a2e;
+    color: white;
+    border: 2px solid #0f3460;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
