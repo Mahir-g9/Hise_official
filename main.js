@@ -756,7 +756,7 @@ function startGame() {
                 
                 // ✅ Need minimum 3 players
                 if (!lobby.players || lobby.players.length < 2) {
-                    alert('Need at least 3 players to start');
+                    alert('Need at least 2 players to start');
                     return;
                 }
                 
@@ -781,6 +781,10 @@ function startGame() {
             
             // 👇 Teleport everyone in THIS lobby to game.html
             window.location.href = "game.html?lobby=" + currentLobbyId;
+            if (lobby.status === "playing" && window.location.pathname.includes("index.html")) {
+    window.location.href = "game.html?lobby=" + currentLobbyId;
+    return;
+}
         })
         .catch((error) => {
             alert('Error starting game: ' + error.message);
