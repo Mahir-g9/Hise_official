@@ -115,23 +115,11 @@ function loadUserData() {
     db.collection('users').doc(currentUser.uid).get()
         .then((doc) => {
             if (doc.exists) {
-                userData = doc.data();
+                userData = doc.data(); // <-- This updates to the correct account
                 
-                // Update UI with user data
+                // Update UI elements
                 document.getElementById('player-name').textContent = userData.displayName;
                 document.getElementById('player-id').textContent = currentUser.uid.substring(0, 8).toUpperCase();
-                document.getElementById('change-name').value = userData.displayName;
-                
-                // Select the user's color
-                if (userData.color) {
-                    document.querySelectorAll('.color-option').forEach(option => {
-                        if (option.style.backgroundColor === userData.color) {
-                            option.classList.add('selected');
-                        } else {
-                            option.classList.remove('selected');
-                        }
-                    });
-                }
                 
                 // Show game container
                 loginContainer.style.display = 'none';
@@ -140,9 +128,6 @@ function loadUserData() {
                 // Load lobbies
                 loadLobbies();
             }
-        })
-        .catch((error) => {
-            console.error("Error getting user document:", error);
         });
 }
 
@@ -435,61 +420,60 @@ function showLobbyClosedMessage() {
 
 // Join a lobby
 function joinLobby(lobbyId) {
+    if (!currentUser || !userData) return;
+    
+    const newPlayer = {
+        id: currentUser.uid || "unknown-id",
+        name: userData.displayName || "Unknown",
+        color: userData.color || "#FFFFFF",
+        isHost: false
+    };
+    
+    if (!newPlayer.id || !newPlayer.name) {
+        alert('Cannot join lobby: missing player information.');
+        return;
+    }
+    
     db.collection('lobbies').doc(lobbyId).get()
-        .then((doc) => {
-            if (doc.exists) {
-                const lobby = doc.data();
-                
-                // Check if lobby is full
-                if (lobby.players && lobby.players.length >= lobby.maxPlayers) {
-                    alert('This lobby is full');
-                    return;
-                }
-                
-                // Check if player is already in the lobby
-                if (lobby.players && lobby.players.some(player => player.id === currentUser.uid)) {
-                    alert('You are already in this lobby');
-                    return;
-                }
-                
-                // Add player to lobby
-                const newPlayer = {
-    id: currentUser.uid || "unknown-id",
-    name: userData.displayName || "Unknown",
-    color: userData.color || "#FFFFFF",
-    isHost: false
-};
-
-// Only update if all required fields exist
-if (newPlayer.id && newPlayer.name) {
-    db.collection('lobbies').doc(lobbyId).update({
-        players: firebase.firestore.FieldValue.arrayUnion(newPlayer),
-        lastActivity: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-        alert('Joined lobby successfully!');
-    })
-    .catch((error) => {
-        console.error('Error joining lobby:', error);
-    });
-} else {
-    alert('Cannot join lobby: missing player information.');
-}
-                
-                return db.collection('lobbies').doc(lobbyId).update({
+        .then(doc => {
+            if (!doc.exists) {
+                alert('Lobby does not exist.');
+                return;
+            }
+            
+            const lobby = doc.data();
+            
+            // Check if lobby is full
+            if (lobby.players && lobby.players.length >= lobby.maxPlayers) {
+                alert('This lobby is full');
+                return;
+            }
+            
+            // Check if player is already in the lobby
+            if (lobby.players && lobby.players.some(player => player.id === currentUser.uid)) {
+                alert('You are already in this lobby');
+                return;
+            }
+            
+            // Add player to lobby
+            return db.collection('lobbies').doc(lobbyId).update({
                     players: firebase.firestore.FieldValue.arrayUnion(newPlayer),
                     lastActivity: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    // Join success
+                    currentLobbyId = lobbyId;
+                    alert('Joined lobby successfully!');
+                    setupLobbyListener();
+                    setupChatListener();
+                    showLobbyView();
+                    
+                    // Send system message
+                    sendSystemMessage(`${newPlayer.name} joined the game!`);
                 });
-            }
         })
-        .then(() => {
-            currentLobbyId = lobbyId;
-            alert('Joined lobby successfully!');
-            setupLobbyListener();
-            setupChatListener();
-            showLobbyView();
-        })
-        .catch((error) => {
+        .catch(error => {
+            console.error('Error joining lobby:', error);
             alert('Error joining lobby: ' + error.message);
         });
 }
@@ -573,20 +557,19 @@ function sendChatMessage() {
     const chatInput = document.getElementById('chat-input');
     const message = chatInput.value.trim();
     
-    if (message && currentLobbyId) {
-        db.collection('lobbies').doc(currentLobbyId).collection('messages').add({
-            sender: userData.displayName,
+    if (!message || !currentLobbyId) return;
+    
+    const senderName = (userData.displayName || 'Unknown');
+    const senderColor = (userData.color || '#FFFFFF');
+    
+    db.collection('lobbies').doc(currentLobbyId).collection('messages').add({
+            sender: senderName,
             text: message,
-            color: userData.color,
+            color: senderColor,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         })
-        .then(() => {
-            chatInput.value = '';
-        })
-        .catch((error) => {
-            console.error("Error sending message: ", error);
-        });
-    }
+        .then(() => chatInput.value = '')
+        .catch(console.error);
 }
 
 // Send a system message
@@ -791,64 +774,41 @@ function startGame() {
 function leaveLobby() {
     if (!currentLobbyId) return;
 
-    db.collection('lobbies').doc(currentLobbyId).get()
-        .then((doc) => {
-            if (!doc.exists) return;
+    const lobbyRef = db.collection('lobbies').doc(currentLobbyId);
 
-            const lobby = doc.data();
-            const player = lobby.players.find(p => p.id === currentUser.uid);
+    lobbyRef.get().then(doc => {
+        if (!doc.exists) return;
 
-            if (!player) return;
+        let lobby = doc.data();
+        const leavingPlayer = lobby.players.find(p => p.id === currentUser.uid);
 
-            let updates = { lastActivity: firebase.firestore.FieldValue.serverTimestamp() };
+        if (!leavingPlayer) return;
 
-            // Remove current player from players array
-            updates.players = firebase.firestore.FieldValue.arrayRemove(player);
+        // Remove leaving player
+        const remainingPlayers = lobby.players.filter(p => p.id !== currentUser.uid);
 
-            // Update lobby first
-            return db.collection('lobbies').doc(currentLobbyId).update(updates)
-                .then(() => {
-                    // If the leaving player was host, assign new host
-                    if (player.isHost) {
-                        db.collection('lobbies').doc(currentLobbyId).get()
-                            .then((doc) => {
-                                const updatedLobby = doc.data();
-                                if (updatedLobby.players && updatedLobby.players.length > 0) {
-                                    // Assign first player as new host
-                                    const newHost = updatedLobby.players[0];
-                                    const updatedPlayers = updatedLobby.players.map(p => ({
-                                        ...p,
-                                        isHost: p.id === newHost.id
-                                    }));
+        const updates = {
+            players: remainingPlayers,
+            lastActivity: firebase.firestore.FieldValue.serverTimestamp()
+        };
 
-                                    db.collection('lobbies').doc(currentLobbyId).update({
-                                        hostId: newHost.id,
-                                        players: updatedPlayers
-                                    }).then(() => {
-                                        sendSystemMessage(`${userData.displayName} left the lobby. ${newHost.name} is the new host.`);
-                                    });
-                                } else {
-                                    // No players left, delete lobby
-                                    db.collection('lobbies').doc(currentLobbyId).delete()
-                                        .then(() => {
-                                            sendSystemMessage(`Lobby deleted as all players left.`);
-                                        });
-                                }
-                            });
-                    } else {
-                        sendSystemMessage(`${userData.displayName} left the lobby.`);
-                    }
-                });
-        })
-        .then(() => {
-            currentLobbyId = null;
-            if (lobbyListener) { lobbyListener(); lobbyListener = null; }
-            if (chatListener) { chatListener(); chatListener = null; }
-            showMainMenu();
-        })
-        .catch((error) => {
-            alert('Error leaving lobby: ' + error.message);
-        });
+        // Assign new host if leaving player was host
+        if (leavingPlayer.isHost && remainingPlayers.length > 0) {
+            updates.hostId = remainingPlayers[0].id;
+            updates.players = remainingPlayers.map((p, i) => ({
+                ...p,
+                isHost: i === 0 // first player is host
+            }));
+        }
+
+        // Update Firestore
+        return lobbyRef.update(updates);
+    }).then(() => {
+        currentLobbyId = null;
+        if (lobbyListener) { lobbyListener(); lobbyListener = null; }
+        if (chatListener) { chatListener(); chatListener = null; }
+        showMainMenu();
+    }).catch(console.error);
 }
 
 // Show main menu
@@ -911,23 +871,23 @@ auth.onAuthStateChanged((user) => {
     if (user) {
         // User is signed in
         currentUser = user;
+
+        // Reset userData
+        userData = {};
+        
+        // Load current user data from Firestore
         loadUserData();
     } else {
         // User is signed out
-        loginContainer.style.display = 'block';
-        gameContainer.style.display = 'none';
         currentUser = null;
         userData = {};
         
-        // Clean up listeners
-        if (lobbyListener) {
-            lobbyListener();
-            lobbyListener = null;
-        }
-        if (chatListener) {
-            chatListener();
-            chatListener = null;
-        }
+        loginContainer.style.display = 'block';
+        gameContainer.style.display = 'none';
+
+        // Remove lobby/chat listeners
+        if (lobbyListener) { lobbyListener(); lobbyListener = null; }
+        if (chatListener) { chatListener(); chatListener = null; }
     }
 });
 
