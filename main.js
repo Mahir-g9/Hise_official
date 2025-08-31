@@ -497,10 +497,14 @@ function setupLobbyListener() {
             const lobby = doc.data();
             
             // ✅ If game started, teleport (only if we're still on index.html)
-            if (lobby.status === "playing" && window.location.pathname.includes("index.html")) {
-                window.location.href = "game.html?lobby=" + currentLobbyId;
-                return;
-            }
+            // ✅ If game started, teleport (everyone in the lobby)
+if (lobby.status === "playing") {
+    const currentUrl = window.location.pathname.split("/").pop();
+    if (currentUrl !== "game.html") {
+        window.location.href = "game.html?lobby=" + currentLobbyId;
+    }
+    return;
+}
             
             // Otherwise, show normal lobby view
             updateLobbyView(lobby);
@@ -781,8 +785,12 @@ function startGame() {
             
             // 👇 Teleport everyone in THIS lobby to game.html
             window.location.href = "game.html?lobby=" + currentLobbyId;
-            if (lobby.status === "playing" && window.location.pathname.includes("index.html")) {
-    window.location.href = "game.html?lobby=" + currentLobbyId;
+            // ✅ If game started, teleport (everyone in the lobby)
+if (lobby.status === "playing") {
+    const currentUrl = window.location.pathname.split("/").pop();
+    if (currentUrl !== "game.html") {
+        window.location.href = "game.html?lobby=" + currentLobbyId;
+    }
     return;
 }
         })
@@ -1043,4 +1051,4 @@ function cleanupInactiveLobbies() {
 }
 
 // Run cleanup every 1 minute
-setInterval(cleanupInactiveLobbies, 60 * 1000);
+setInterval(cleanupInactiveLobbies, 60 * 1000);//v 9
