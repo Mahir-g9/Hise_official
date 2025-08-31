@@ -362,11 +362,27 @@ function joinLobbyById() {
                 
                 // Add player to lobby
                 const newPlayer = {
-                    id: currentUser.uid,
-                    name: userData.displayName,
-                    color: userData.color,
-                    isHost: false
-                };
+    id: currentUser.uid || "unknown-id",
+    name: userData.displayName || "Unknown",
+    color: userData.color || "#FFFFFF",
+    isHost: false
+};
+
+// Only update if all required fields exist
+if (newPlayer.id && newPlayer.name) {
+    db.collection('lobbies').doc(lobbyId).update({
+        players: firebase.firestore.FieldValue.arrayUnion(newPlayer),
+        lastActivity: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+        alert('Joined lobby successfully!');
+    })
+    .catch((error) => {
+        console.error('Error joining lobby:', error);
+    });
+} else {
+    alert('Cannot join lobby: missing player information.');
+}
                 
                 return db.collection('lobbies').doc(lobbyId).update({
                     players: firebase.firestore.FieldValue.arrayUnion(newPlayer),
@@ -438,11 +454,27 @@ function joinLobby(lobbyId) {
                 
                 // Add player to lobby
                 const newPlayer = {
-                    id: currentUser.uid,
-                    name: userData.displayName,
-                    color: userData.color,
-                    isHost: false
-                };
+    id: currentUser.uid || "unknown-id",
+    name: userData.displayName || "Unknown",
+    color: userData.color || "#FFFFFF",
+    isHost: false
+};
+
+// Only update if all required fields exist
+if (newPlayer.id && newPlayer.name) {
+    db.collection('lobbies').doc(lobbyId).update({
+        players: firebase.firestore.FieldValue.arrayUnion(newPlayer),
+        lastActivity: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+        alert('Joined lobby successfully!');
+    })
+    .catch((error) => {
+        console.error('Error joining lobby:', error);
+    });
+} else {
+    alert('Cannot join lobby: missing player information.');
+}
                 
                 return db.collection('lobbies').doc(lobbyId).update({
                     players: firebase.firestore.FieldValue.arrayUnion(newPlayer),
@@ -986,3 +1018,48 @@ logoutBtn.addEventListener('click', () => {
       alert('Logout error: ' + error.message);
     });
 });
+// Update your initGame or lobby join function
+setInterval(() => {
+    if (currentUser && currentLobbyId) {
+        db.collection('lobbies')
+            .doc(currentLobbyId)
+            .collection('heartbeats')
+            .doc(currentUser.uid)
+            .set({
+                lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+            });
+    }
+}, 10000); // every 10 seconds
+function cleanupInactiveLobbies() {
+    db.collection('lobbies').where('status', '==', 'waiting').get()
+        .then(querySnapshot => {
+            querySnapshot.forEach(async (doc) => {
+                const lobbyId = doc.id;
+                const heartbeatsSnap = await db.collection('lobbies')
+                    .doc(lobbyId)
+                    .collection('heartbeats')
+                    .get();
+                
+                const now = new Date();
+                const offlineThreshold = new Date(now - 30 * 1000); // 30 seconds
+                
+                let allOffline = true;
+                heartbeatsSnap.forEach(hbDoc => {
+                    const lastSeen = hbDoc.data().lastSeen?.toDate();
+                    if (lastSeen && lastSeen > offlineThreshold) {
+                        allOffline = false;
+                    }
+                });
+                
+                if (allOffline) {
+                    // Close lobby and remove heartbeats
+                    db.collection('lobbies').doc(lobbyId).update({ status: 'closed' });
+                    heartbeatsSnap.forEach(hbDoc => hbDoc.ref.delete());
+                }
+            });
+        })
+        .catch(console.error);
+}
+
+// Run cleanup every 1 minute
+setInterval(cleanupInactiveLobbies, 60 * 1000);
