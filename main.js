@@ -342,7 +342,7 @@ function joinLobbyById() {
                 // Check if player is already in the lobby
                 if (lobby.players && lobby.players.some(player => player.id === currentUser.uid)) {
                     alert('You are already in this lobby');
-                    return;
+                    
                 }
                 
                 // Add player to lobby
@@ -452,7 +452,8 @@ function joinLobby(lobbyId) {
             // Check if player is already in the lobby
             if (lobby.players && lobby.players.some(player => player.id === currentUser.uid)) {
                 alert('You are already in this lobby');
-                return;
+                
+                
             }
             
             // Add player to lobby
@@ -494,9 +495,17 @@ function setupLobbyListener() {
             }
             
             const lobby = doc.data();
+            
+            // ✅ If game started, teleport (only if we're still on index.html)
+            if (lobby.status === "playing" && window.location.pathname.includes("index.html")) {
+                window.location.href = "game.html?lobby=" + currentLobbyId;
+                return;
+            }
+            
+            // Otherwise, show normal lobby view
             updateLobbyView(lobby);
             
-            // If no players left, auto close
+            // ✅ If no players left, auto close (only host can delete)
             if ((!lobby.players || lobby.players.length === 0) && currentUser.uid === lobby.hostId) {
                 db.collection('lobbies').doc(currentLobbyId).delete()
                     .then(() => {
@@ -641,13 +650,18 @@ function updateLobbyView(lobby) {
         // Enable/disable start game button
         if (startGameBtn) {
             const isHost = lobby.hostId === currentUser.uid;
-            const hasEnoughPlayers = lobby.players && lobby.players.length >= 3;
+            const hasEnoughPlayers = lobby.players && lobby.players.length >= 2;
             
             startGameBtn.style.display = isHost ? 'block' : 'none';
             startGameBtn.disabled = !hasEnoughPlayers;
-            
+            document.addEventListener("DOMContentLoaded", () => {
+    const startBtn = document.getElementById("startBtn");
+    if (startBtn) {
+        startBtn.addEventListener("click", startGame);
+    }
+});
             if (!hasEnoughPlayers) {
-                startGameBtn.title = 'Need at least 3 players to start';
+                startGameBtn.title = 'Need at least 2 players to start';
             }
         }
     }
@@ -734,19 +748,19 @@ function startGame() {
             if (doc.exists) {
                 const lobby = doc.data();
                 
-                // Check if user is the host
+                // ✅ Only host can start
                 if (lobby.hostId !== currentUser.uid) {
                     alert('Only the host can start the game');
                     return;
                 }
                 
-                // Check if there are enough players
-                if (!lobby.players || lobby.players.length < 3) {
+                // ✅ Need minimum 3 players
+                if (!lobby.players || lobby.players.length < 2) {
                     alert('Need at least 3 players to start');
                     return;
                 }
                 
-                // Assign roles (1 seeker, rest hiders)
+                // 🎲 Assign roles
                 const players = [...lobby.players];
                 const seekerIndex = Math.floor(Math.random() * players.length);
                 
@@ -754,7 +768,7 @@ function startGame() {
                     player.role = index === seekerIndex ? 'seeker' : 'hider';
                 });
                 
-                // Update lobby status
+                // ✅ Update lobby status & roles
                 return db.collection('lobbies').doc(currentLobbyId).update({
                     status: 'playing',
                     players: players,
@@ -764,6 +778,9 @@ function startGame() {
         })
         .then(() => {
             sendSystemMessage('Game started! Roles have been assigned.');
+            
+            // 👇 Teleport everyone in THIS lobby to game.html
+            window.location.href = "game.html?lobby=" + currentLobbyId;
         })
         .catch((error) => {
             alert('Error starting game: ' + error.message);
