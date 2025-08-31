@@ -1,42 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Your CSS file -->
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- CSS is linked from style.css -->
 </head>
 <body>
-    <!-- Game container -->
-    <div id="game-container">
-        <!-- Maze or game grid -->
-        <canvas id="game-canvas" width="800" height="600"></canvas>
-        
-        <!-- Player info -->
-        <div id="player-info">
-            <span id="player-name-display"></span>
-            <span id="player-role"></span>
+<div id="game-container" style="position:relative; width:100%; height:100vh; overflow:hidden; background:#111;">
+    <canvas id="gameCanvas" width="800" height="600" style="display:block; margin:auto; background:#222;"></canvas>
+    
+    <!-- Mobile D-Pad -->
+    <div id="controls" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%);">
+        <div style="display:flex; justify-content:center; margin-bottom:5px;">
+            <button data-dir="up" class="dir-btn">↑</button>
         </div>
-
-        <!-- Chat panel -->
-        <div id="game-chat">
-            <div id="chat-messages" class="chat-messages"></div>
-            <div class="chat-input">
-                <input type="text" id="chat-input" placeholder="Type a message...">
-                <button id="send-message-btn">Send</button>
-            </div>
-        </div>
-
-        <!-- Game controls -->
-        <div id="controls">
-            <button id="up-btn">↑</button>
-            <button id="left-btn">←</button>
-            <button id="down-btn">↓</button>
-            <button id="right-btn">→</button>
+        <div style="display:flex; justify-content:center; gap:5px;">
+            <button data-dir="left" class="dir-btn">←</button>
+            <button data-dir="down" class="dir-btn">↓</button>
+            <button data-dir="right" class="dir-btn">→</button>
         </div>
     </div>
+</div>
 
-    <!-- Your game JS -->
-    <script type="module" src="game.js"></script>
+<script>
+// ---------------- Player & Game Setup ----------------
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const player = {
+    x: canvas.width/2,
+    y: canvas.height/2,
+    radius: 15,
+    color: '#00FFAA',
+    speed: 3
+};
+
+// ---------------- Movement ----------------
+const activeDirs = new Set();
+
+// Keyboard
+window.addEventListener('keydown', e=>{
+    if(e.key==='ArrowUp') activeDirs.add('up');
+    if(e.key==='ArrowDown') activeDirs.add('down');
+    if(e.key==='ArrowLeft') activeDirs.add('left');
+    if(e.key==='ArrowRight') activeDirs.add('right');
+});
+
+window.addEventListener('keyup', e=>{
+    if(e.key==='ArrowUp') activeDirs.delete('up');
+    if(e.key==='ArrowDown') activeDirs.delete('down');
+    if(e.key==='ArrowLeft') activeDirs.delete('left');
+    if(e.key==='ArrowRight') activeDirs.delete('right');
+});
+
+// Touch buttons
+document.querySelectorAll('#controls button').forEach(btn=>{
+    btn.addEventListener('touchstart', ()=>activeDirs.add(btn.dataset.dir));
+    btn.addEventListener('touchend', ()=>activeDirs.delete(btn.dataset.dir));
+});
+
+// Move player
+function movePlayer(dir){
+    switch(dir){
+        case 'up': player.y -= player.speed; break;
+        case 'down': player.y += player.speed; break;
+        case 'left': player.x -= player.speed; break;
+        case 'right': player.x += player.speed; break;
+    }
+    // Boundaries
+    if(player.x < player.radius) player.x = player.radius;
+    if(player.x > canvas.width - player.radius) player.x = canvas.width - player.radius;
+    if(player.y < player.radius) player.y = player.radius;
+    if(player.y > canvas.height - player.radius) player.y = canvas.height - player.radius;
+}
+
+// Continuous movement
+setInterval(()=>{
+    activeDirs.forEach(dir=>movePlayer(dir));
+}, 50); // 50ms for smoother movement
+
+// ---------------- Render ----------------
+function draw(){
+    // Clear
+    ctx.fillStyle = '#222';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // Fog / vision
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.9)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, 100, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    // Player
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
+    ctx.fillStyle = player.color;
+    ctx.fill();
+    ctx.strokeStyle = '#FFF';
+    ctx.stroke();
+
+    requestAnimationFrame(draw);
+}
+
+draw();
+
+// ---------------- Export / Import ----------------
+function exportPlayer() {
+    return JSON.stringify(player);
+}
+
+function importPlayer(json) {
+    try{
+        const data = JSON.parse(json);
+        player.x = data.x || canvas.width/2;
+        player.y = data.y || canvas.height/2;
+        player.radius = data.radius || 15;
+        player.color = data.color || '#00FFAA';
+        player.speed = data.speed || 3;
+    }catch(e){ console.error(e); }
+}
+
+// Example: copy to clipboard
+function copyPlayerData() {
+    navigator.clipboard.writeText(exportPlayer());
+}
+
+// Example: paste from prompt
+function pastePlayerData() {
+    const json = prompt("Paste player JSON:");
+    if(json) importPlayer(json);
+}
+</script>
+
+<style>
+/* D-pad buttons styling */
+#controls button.dir-btn {
+    width:60px;
+    height:60px;
+    font-size:24px;
+    background:#0f3460;
+    color:white;
+    border:none;
+    border-radius:10px;
+    touch-action:none;
+}
+#controls button.dir-btn:active { background:#1a1a2e; }
+#controls button.dir-btn {
+    user-select: none;      /* Prevent text selection */
+    -webkit-user-select: none; /* Safari/Chrome */
+    -ms-user-select: none;     /* IE/Edge */
+    touch-action: none;     /* Prevent default touch actions */
+}
+</style>
 </body>
 </html>
